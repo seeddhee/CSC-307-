@@ -17,17 +17,31 @@ function MyApp() {
        return false;         
     }
  }
-  function removeOneCharacter (index) {
-    const updated = characters.filter((character, i) => {
-        return i !== index
-      });
-      setCharacters(updated);
-    }
+
+ async function makeDeleteCall(index){
+   try {
+      const response = await axios.delete(`http://localhost:8000/users/${index}`);
+      return response;
+   }
+   catch (error) {
+      console.log(error);
+      return false;
+   }
+}
+function removeOneCharacter(id) {
+   makeDeleteCall(id).then((result) => {
+     if (result && result.status === 204) {
+       const updatedCharacters = characters.filter((c) => c.id !== id);
+       setCharacters(updatedCharacters);
+     }
+   });
+ }
   
+   
     function updateList(person) { 
       makePostCall(person).then( result => {
-      if (result && result.status === 200)
-         setCharacters([...characters, person] );
+      if (result && result.status === 201)
+         setCharacters([...characters, result.data] );
       });
    }
 
@@ -43,6 +57,10 @@ function MyApp() {
       }
    }
 
+  
+
+  
+
     useEffect(() => { //called when MyApp is mounted the data is fetched from backend once only when it is mounted
       fetchAll().then( result => {
          if (result)
@@ -52,6 +70,7 @@ function MyApp() {
 
     return (
         <div className="container">
+   
            <Table characterData={characters} removeCharacter={removeOneCharacter} />
            <Form handleSubmit={updateList}></Form>
         </div>
